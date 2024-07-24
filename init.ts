@@ -5,7 +5,7 @@ import fs from 'fs';
 import type {Applicant} from './pages/api/lib/applicant'
 import { getDB } from './pages/api/lib/db';
 
-const DUMMY_APPLICANTS: Applicant[] = [
+const DUMMY_APPLICANTS: Omit<Applicant, 'id'>[] = [
     {
         name: 'Alice',
         phone: '1115551111'
@@ -56,6 +56,8 @@ const DUMMY_APPLICANTS: Applicant[] = [
         // Probably didn't exist yet
     }
     const db = await getDB();
+    // TODO: Consider adding constraints. For example, should phone number be unique?
+    // TODO: Also consider adding an ID column. We'll probably need that for updating and deleting.
     await db.exec(`
         create table applicant (
             name text,

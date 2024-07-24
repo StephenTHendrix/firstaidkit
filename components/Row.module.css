@@ -1,0 +1,84 @@
+.applicant {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  width: 100%;
+  border-bottom: 1px solid black;
+  background-color: white;
+  font-size: 16px;
+}
+
+.applicant:nth-child(odd) {
+  background-color: #eaeaea;
+}
+
+.applicant:last-child {
+  border-bottom: 0;
+}
+
+.applicant div,
+.applicant input {
+  padding: 10px;
+  border-right: 1px solid black;
+  height: 100%;
+  width: 100%;
+  font-size: 16px;
+  font-family: 'Arial';
+}
+
+.applicant input {
+  border-top: none;
+  border-left: none;
+  border-bottom: none;
+  background-color: lightblue;
+}
+
+.applicant div:last-child,
+.applicant input:last-child {
+  border-right: 0;
+}
+
+.applicant div:hover {
+  background-color: #d3d3d3;
+}
+
+.applicant:nth-child(odd) .button {
+  background-color: #eaeaea;
+}
+
+.applicant:nth-child(even) .button {
+  background-color: white;
+}
+
+.button {
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.button-cell {
+  display: flex;
+  justify-content: space-around;
+}
+
+.button-cell:hover .button {
+  background-color: #d3d3d3;
+}
+
+/* --- Icons --- */
+
+.check {
+  color: green;
+}
+
+.close {
+  color: red;
+}
+
+.pencil {
+  color: blue;
+}
+
+.trash {
+  color: red;
+}

@@ -1,18 +1,36 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
-import { useEffect, useState } from 'react'
-import styles from '../styles/Home.module.css'
-import type { Applicant } from './api/lib/applicant'
+import type { NextPage } from "next";
+import Head from "next/head";
+import { useEffect, useState } from "react";
+import { FaPlus } from "react-icons/fa";
+
+import styles from "../styles/Home.module.css";
+import type { Applicant } from "./api/lib/applicant";
+import { ApplicantTable } from "../components/ApplicantTable";
 
 const Home: NextPage = () => {
-  const [applicants, setApplicants] = useState<Applicant[]>([])
+  // TODO: As the app grows, we'll probably want to move this to its own hook or global state, and even use a tool like TanStack Query to manage server state.
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
 
   useEffect(() => {
-    (async () => {
-      setApplicants(await (await fetch('/api/all')).json() as Applicant[]);
-    })();
+    const fetchApplicants = async () => {
+      // TODO: Avoid redundant migrations
+      await fetch("/api/migrations");
+      const response = await fetch("/api/all");
+      const data = (await response.json()) as Applicant[];
+      setApplicants(data);
+    };
+
+    fetchApplicants();
   }, []);
+
+  const createBlankApplicant = () => {
+    setApplicants((currentApplicants) => [
+      ...currentApplicants,
+      { id: 0, name: "", phone: "", screener: null },
+    ]);
+  };
+
+  const disabled = applicants.some((applicant) => applicant.id === 0);
 
   return (
     <div className={styles.container}>
@@ -22,19 +40,31 @@ const Home: NextPage = () => {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          (First) AidKit Task
-        </h1>
-        <ul className={styles['applicant-list']}>
-          {applicants.map(a => <li className={styles.applicant} key={a.name}>
-            <div className={styles.name}>{a.name}</div>
-            <div className={styles.phone}>{a.phone}</div>
-          </li>
+        <div>
+          {!!applicants.length ? (
+            <>
+              <ApplicantTable
+                title="(First) AidKit Task"
+                applicants={applicants}
+                setApplicants={setApplicants}
+              />
+              <button
+                className={styles.button}
+                onClick={createBlankApplicant}
+                disabled={disabled}
+              >
+                <FaPlus
+                  className={disabled ? styles["plus-disabled"] : styles.plus}
+                />
+              </button>
+            </>
+          ) : (
+            <div>Loading Applicants...</div>
           )}
-        </ul>
+        </div>
       </main>
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
