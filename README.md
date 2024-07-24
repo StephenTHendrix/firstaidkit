@@ -1,34 +1,41 @@
-# First AidKit (interview)
+# Development Journal
 
-This is a toy project that we use at AidKit for technical interviews. Currently it includes a very simple main page that lists (fake) grant recipients and their phone numbers. Through the course of the interview, we'll add features to this project.
+The suggested starter task was a feature to add new applicants to the database. I knew I'd end up wanting to add full CRUD functionality, and tried to think ahead to ensure a clear and smooth integration between each user action. I did some research and ended up with this inline editing flow:
 
-## The Stack
+![CRUD demo](public/images/readme/crud-demo.gif)
 
-This project is written in Typescript using Next.js. Next.js is a React framework that has a friendly developer experience (live reloads, etc).
+so I decided on a branching strategy that actually set the foundation with the ability for a user to edit an existing applicant, since adding a new applicant is actually more like editing a blank applicant.
 
-For styling, we're just using traditional CSS (albeit with some next.js cleverness). Since people tend to use a huge variety of different CSS frameworks, for this exercise we've just gone w/ the common denominator.
+![Git Flow Chart](public/images/readme/git-flow-chart.png)
 
-As a database, we're using sqlite. Sqlite is a simple SQL database that is stored in a local file. By using it here, we can avoid common challenges and pitfalls in configuring a more traditional SQL database.
+## feature/update-applicant
 
-## Developing
+### Challenges
 
-First, install the dependencies and then run the development server:
+- The most difficult challenge I faced here was the fact that the original database didn't have an ID column - or any primary key for that matter. I could have just updated `database.db` or `init.ts`, but it felt wrong to change the starting point. So I decided to simulate migrations in order to keep the original database file intact.
 
-```bash
-yarn install 
-yarn dev
-```
+- Allowing the user to cancel their edit took me longer than it should have; in fact, I didn't even accomplish it in this branch. For a user to be able to update an applicant, I didn't need to pass in `applicants` or `setApplicants` as props to the component yet since I could just rely on the `Row` component's local state for an optimistic update. When I thought about canceling an edit, I got ahead of myself: I thought about refetching data, which made me think about server state, which made me think it was too much for a demo app. Fortunately, after passing those new props for creation and deletion functionality, I realized that I had the original state of the applicant in the `applicant` array that I could revert to.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Future Considerations
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+- The most important fix that needs to be made app-wide is ensuring that client state and server state are synchronized. Right now I'm relying on perfectly optimistic client state, where the UI always happens to coincide with the database. I think the first step on that journey is making more fetch requests after sending updates, but even better would be a tool like TanStack Query with a cache that automatically refetches data after being invalidated.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/all](http://localhost:3000/api/all). This endpoint can be edited in `pages/api/all.ts`.
+- In the same vein, the user currently isn't given any feedback about whether their actions were actually successful or not. Ideally we'd give feedback, and revert any optimistic updates in the event of an error.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+- Right now, full rows are sent in a PUT request, even if the user only changes one field. Depending on how many columns we add in the future and how large the dataset becomes, it might be worth using PATCH requests to only update edited fields.
 
-Styles are imported in a similar way to typescript imports, see the import at the top of `index.tsx` and how it's use in the corresponding React components.
+## feature/create-applicant
 
-## A Starter Task
+### Challenges  
 
-If you want to experiment with making changes. Try adding a feature to add a new applicant to the database!
+- Setting a placeholder applicant with an ID of 0 feels a little bit like a workaround; when the app becomes more complex with multiple concurrent operations or failed API calls, I can see conflicts arising. In fact, if I hadn't diabled the '+' button when a blank row was present, we'd probably see some of those issues now. I think the bare minimum next step would be to generate unique temporary IDs.
+
+### Future Considerations
+
+- It might be nice to be able to add multiple applicants at a time in the future; in fact, it might be nice to do the same with updating and deleting, perhaps all at the same time in an integrated flow or view. Switching our foundations from inline editing to editing in a modal might be worth consideration.
+
+- I think it probably makes sense to move the '+' button inside of the `ApplicantTable` component for reusability.
+
+## feature /delete-applicant
+
+After working through the other features, this was actually pretty straightforward. The path for making a fetch call with an ID and optimistically updating the UI was pretty clearly laid out by this point.

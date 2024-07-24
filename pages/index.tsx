@@ -8,11 +8,12 @@ import type { Applicant } from "./api/lib/applicant";
 import { ApplicantTable } from "../components/ApplicantTable";
 
 const Home: NextPage = () => {
+  // TODO: As the app grows, we'll probably want to move this to its own hook or global state, and even use a tool like TanStack Query to manage server state.
   const [applicants, setApplicants] = useState<Applicant[]>([]);
 
   useEffect(() => {
     const fetchApplicants = async () => {
-      //TODO: Avoid redundant migrations
+      // TODO: Avoid redundant migrations
       await fetch("/api/migrations");
       const response = await fetch("/api/all");
       const data = (await response.json()) as Applicant[];

@@ -61,15 +61,11 @@ export const Row: FC<Props> = ({
     });
     const parsedResponse = await response.json();
     const newApplicant = { ...applicantInfo, id: parsedResponse.id };
-    // TODO: We need to centralize state or at least manage ut in a way that doesn't require updating both applicants and applicantInfo.
-    // TanStack also seems like a good solution here since we could invalidate the cache after this fetch.
-    // useEffect could have been implemented, but wouldn't solve the core issue.
     setApplicants((currentApplicants) =>
       currentApplicants.map((applicant) =>
         applicant.id === 0 ? newApplicant : applicant
       )
     );
-    setApplicantInfo({ ...applicantInfo, id: parsedResponse.id });
     setEditMode(false);
   };
 
