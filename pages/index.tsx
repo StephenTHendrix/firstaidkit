@@ -6,14 +6,19 @@ import type { Applicant } from './api/lib/applicant'
 import debounce from 'debounce';
 
 const debouncedGetSearchResults = debounce(async (name: string, setApplicants: (applicants: Applicant[]) => void) => {
-  if (name === '') return;
-  const response = await fetch('/api/search', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ name }),
-  });
+  let response
+  // Return original results when user clears search
+  if (name === '') {
+    response = await fetch('/api/all')
+  } else {
+    response = await fetch('/api/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    });
+  }
 
   const awaitedResponse = await response.json();
   // TODO: Remove this when done. Leaving it in during development to monitor debounce.
