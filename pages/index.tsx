@@ -1,7 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Image from 'next/image'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import type { Applicant } from './api/lib/applicant'
 import debounce from 'debounce';
@@ -17,6 +16,7 @@ const debouncedGetSearchResults = debounce(async (name: string, setApplicants: (
   });
 
   const awaitedResponse = await response.json();
+  // TODO: Remove this when done. Leaving it in during development to monitor debounce.
   console.log({ awaitedResponse });
   setApplicants(awaitedResponse);
 }, 1000);
