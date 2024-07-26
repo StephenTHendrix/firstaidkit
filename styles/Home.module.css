@@ -39,7 +39,8 @@
   width: 600px;
 }
 
-.applicant, .table-heading {
+.applicant,
+.table-heading {
   list-style: none;
   padding: 10px;
   color: #666;
@@ -63,13 +64,15 @@
   border-bottom: 0;
 }
 
-.applicant div, .table-heading div {
+.applicant div,
+.table-heading div {
   flex: 1 1;
   padding: 10px;
   border-right: 1px solid black;
 }
 
-.applicant div:last-child, .table-heading div:last-child {
+.applicant div:last-child,
+.table-heading div:last-child {
   border-right: 0;
 }
 
@@ -83,3 +86,6 @@
   margin: 0 10px;
 }
 
+.border-bottom-none {
+  border-bottom: none;
+}
