@@ -26,12 +26,9 @@ const HomeWithCallback: NextPage = () => {
     });
 
     const awaitedResponse = await response.json();
-    console.log({ awaitedResponse });
     setApplicants(awaitedResponse);
   };
 
-  // It feels counter-productive to have to use useMemo, but if I understand correctly, passing parameters to useCallback will cause its returned function to still be different every time:
-  // https://stackoverflow.com/questions/61255053/react-usecallback-with-parameter
   const debouncedGetSearchResults = useMemo(() => debounce((name: string) => {
     getSearchResults(name);
   }, 1000), []);

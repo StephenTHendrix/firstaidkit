@@ -37,7 +37,7 @@ const debouncedGetSearchResults = debounce(
     const awaitedResponse = await response.json();
     setApplicants(awaitedResponse.applicants, awaitedResponse.total);
   },
-  1000
+  250
 );
 
 const columns: (keyof ApplicantDisplay)[] = ["name", "phone", "screener"];
