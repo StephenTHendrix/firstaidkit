@@ -44,6 +44,19 @@ const Home: NextPage = () => {
     debouncedGetSearchResults(string, setApplicants);
   };
 
+  const handleSort = (column: keyof Applicant, order: "asc" | "desc") => {
+    const sortedApplicants = [...applicants].sort((a, b) => {
+      if (order === "asc") {
+        return a[column].localeCompare(b[column]);
+      } else {
+        return b[column].localeCompare(a[column]);
+      }
+    });
+    setApplicants(sortedApplicants);
+  };
+
+  const columns: (keyof Applicant)[] = ["name", "phone"];
+
   return (
     <div className={styles.container}>
       <Head>
@@ -60,10 +73,19 @@ const Home: NextPage = () => {
         />
         <div className={styles["table-container"]}>
           <ul className={styles["applicant-list"]}>
-            {applicants?.map((a) => (
-              <li className={styles.applicant} key={a.name}>
-                <div className={styles.name}>{a.name}</div>
-                <div className={styles.phone}>{a.phone}</div>
+          <li className={styles["table-heading"]}>
+              {columns.map((column) => (
+                <div key={column}>
+                  <span className={styles["column-name"]}>{column.charAt(0).toUpperCase() + column.slice(1)}</span>
+                  <button onClick={() => handleSort(column, "asc")}>Asc</button>
+                  <button onClick={() => handleSort(column, "desc")}>Desc</button>
+                </div>
+              ))}
+            </li>
+            {applicants?.map((applicant) => (
+              <li className={styles.applicant} key={applicant.name}>
+                <div className={styles.name}>{applicant.name}</div>
+                <div className={styles.phone}>{applicant.phone}</div>
               </li>
             ))}
           </ul>
