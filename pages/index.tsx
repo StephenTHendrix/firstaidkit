@@ -2,70 +2,65 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
-import type { Applicant, ApplicantDisplay } from "./api/lib/applicant";
+import type { Applicant, ApplicantDisplay, ScreenerOptions } from "./api/lib/applicant";
 import debounce from "debounce";
 
 const debouncedGetSearchResults = debounce(
-  async (name: string, setApplicants: (applicants: Applicant[]) => void) => {
-    let response;
-    // Return original results when user clears search
-    if (name === "") {
-      response = await fetch("/api/all");
-    } else {
-      response = await fetch("/api/search", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name }),
-      });
-    }
+  async (
+    name: string,
+    sortColumn: string,
+    sortOrder: string,
+    filter: string,
+    setApplicants: (applicants: Applicant[]) => void
+  ) => {
+    let response = await fetch("/api/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name, sortColumn, sortOrder, filter }),
+    });
 
     const awaitedResponse = await response.json();
-    // TODO: Remove this when done. Leaving it in during development to monitor debounce.
     console.log({ awaitedResponse });
     setApplicants(awaitedResponse);
   },
-  1000
+  250
 );
+
+const columns: (keyof ApplicantDisplay)[] = ["name", "phone", "screener"]
+const filterOptions: ("all" | ScreenerOptions)[] = ["all", "pending", "approved", "rejected"];
 
 const Home: NextPage = () => {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [search, setSearch] = useState<string>("");
   const [filter, setFilter] = useState<string>("");
+  const [sortColumn, setSortColumn] = useState<string>("name");
+  const [sortOrder, setSortOrder] = useState<string>("asc");
 
   useEffect(() => {
     (async () => {
-      setApplicants((await (await fetch("/api/all")).json()) as Applicant[]);
+      const response = await fetch("/api/all");
+      setApplicants((await response.json()) as Applicant[]);
     })();
   }, []);
 
   const handleChange = (string: string) => {
     setSearch(string);
-    debouncedGetSearchResults(string, setApplicants);
+    debouncedGetSearchResults(string, sortColumn, sortOrder, filter, setApplicants);
   };
 
   const handleSort = (column: keyof ApplicantDisplay, order: "asc" | "desc") => {
-    const sortedApplicants = [...applicants].sort((a, b) => {
-      if (order === "asc") {
-        return a[column].localeCompare(b[column]);
-      } else {
-        return b[column].localeCompare(a[column]);
-      }
-    });
-    setApplicants(sortedApplicants);
+    setSortColumn(column);
+    setSortOrder(order);
+    debouncedGetSearchResults(search, column, order, filter, setApplicants);
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFilter(event.target.value);
+    const value = event.target.value;
+    setFilter(value);
+    debouncedGetSearchResults(search, sortColumn, sortOrder, value, setApplicants);
   };
-
-  const filteredApplicants = filter
-    ? applicants.filter((applicant) => applicant.screener === filter)
-    : applicants;
-
-  const columns = Object.keys(applicants[0] || {}).filter(key => key !== 'id') as (keyof ApplicantDisplay)[];
-  const filterOptions = ["all", ...Array.from(new Set(applicants.map((applicant) => applicant.screener)))];
 
   return (
     <div className={styles.container}>
@@ -109,7 +104,7 @@ const Home: NextPage = () => {
                 </div>
               ))}
             </li>
-            {filteredApplicants?.map((applicant) => (
+            {applicants?.map((applicant) => (
               <li className={styles.applicant} key={applicant.name}>
                 {columns.map((column) => (
                   <div key={column} className={styles[column]}>

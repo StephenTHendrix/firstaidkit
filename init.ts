@@ -69,7 +69,7 @@ const DUMMY_APPLICANTS: ApplicantDisplay[] = [
             id integer primary key autoincrement,
             name text,
             phone text,
-            screener text
+            screener text check(screener in ('pending', 'approved', 'rejected'))
         ); 
     `);
     
