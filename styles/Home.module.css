@@ -30,7 +30,7 @@
 }
 
 .table-container {
-  height: 400px;
+  height: 450px;
 }
 
 .applicant-list {
@@ -72,3 +72,14 @@
 .applicant div:last-child, .table-heading div:last-child {
   border-right: 0;
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 10px;
+}
+

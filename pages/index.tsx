@@ -11,55 +11,89 @@ const debouncedGetSearchResults = debounce(
     sortColumn: string,
     sortOrder: string,
     filter: string,
-    setApplicants: (applicants: Applicant[]) => void
+    page: number,
+    pageSize: number,
+    setApplicants: (applicants: Applicant[], total: number) => void
   ) => {
-    let response = await fetch("/api/search", {
+    let response = await fetch("/api/applicants", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name, sortColumn, sortOrder, filter }),
+      body: JSON.stringify({ name, sortColumn, sortOrder, filter, page, pageSize }),
     });
 
     const awaitedResponse = await response.json();
     console.log({ awaitedResponse });
-    setApplicants(awaitedResponse);
+    setApplicants(awaitedResponse.applicants, awaitedResponse.total);
   },
   250
 );
 
-const columns: (keyof ApplicantDisplay)[] = ["name", "phone", "screener"]
+const columns: (keyof ApplicantDisplay)[] = ["name", "phone", "screener"];
 const filterOptions: ("all" | ScreenerOptions)[] = ["all", "pending", "approved", "rejected"];
 
 const Home: NextPage = () => {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [totalApplicants, setTotalApplicants] = useState<number>(0);
   const [search, setSearch] = useState<string>("");
   const [filter, setFilter] = useState<string>("");
   const [sortColumn, setSortColumn] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<string>("asc");
+  const [page, setPage] = useState<number>(1);
+  const [pageSize] = useState<number>(10);
 
   useEffect(() => {
     (async () => {
-      const response = await fetch("/api/all");
-      setApplicants((await response.json()) as Applicant[]);
+      const response = await fetch("/api/applicants", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: search, sortColumn, sortOrder, filter, page, pageSize }),
+      });
+      const data = await response.json();
+      setApplicants(data.applicants);
+      setTotalApplicants(data.total);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (string: string) => {
     setSearch(string);
-    debouncedGetSearchResults(string, sortColumn, sortOrder, filter, setApplicants);
+    setPage(1);
+    debouncedGetSearchResults(string, sortColumn, sortOrder, filter, 1, pageSize, (applicants, total) => {
+      setApplicants(applicants);
+      setTotalApplicants(total);
+    });
   };
 
   const handleSort = (column: keyof ApplicantDisplay, order: "asc" | "desc") => {
     setSortColumn(column);
     setSortOrder(order);
-    debouncedGetSearchResults(search, column, order, filter, setApplicants);
+    setPage(1);
+    debouncedGetSearchResults(search, column, order, filter, 1, pageSize, (applicants, total) => {
+      setApplicants(applicants);
+      setTotalApplicants(total);
+    });
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setFilter(value);
-    debouncedGetSearchResults(search, sortColumn, sortOrder, value, setApplicants);
+    setPage(1);
+    debouncedGetSearchResults(search, sortColumn, sortOrder, value, 1, pageSize, (applicants, total) => {
+      setApplicants(applicants);
+      setTotalApplicants(total);
+    });
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    debouncedGetSearchResults(search, sortColumn, sortOrder, filter, newPage, pageSize, (applicants, total) => {
+      setApplicants(applicants);
+      setTotalApplicants(total);
+    });
   };
 
   return (
@@ -114,6 +148,11 @@ const Home: NextPage = () => {
               </li>
             ))}
           </ul>
+        </div>
+        <div className={styles.pagination}>
+          <button onClick={() => handlePageChange(page - 1)} disabled={page <= 1}>Previous</button>
+          <span>Page {page}</span>
+          <button onClick={() => handlePageChange(page + 1)} disabled={(page * pageSize) >= totalApplicants}>Next</button>
         </div>
       </main>
     </div>
