@@ -1,50 +1,58 @@
-import sqlite3 from 'sqlite3'
-import { open } from 'sqlite'
 import fs from 'fs';
 
-import type {Applicant} from './pages/api/lib/applicant'
+import type { ApplicantDisplay } from './pages/api/lib/applicant'
 import { getDB } from './pages/api/lib/db';
 
-const DUMMY_APPLICANTS: Applicant[] = [
+const DUMMY_APPLICANTS: ApplicantDisplay[] = [
     {
         name: 'Alice',
-        phone: '1115551111'
+        phone: '1115551111',
+        screener: 'approved'
     },
     {
         name: 'Bob',
-        phone: '2225552222'
+        phone: '2225552222',
+        screener: 'pending'
     },
     {
         name: 'Carol',
-        phone: '3335553333'
+        phone: '3335553333',
+        screener: 'rejected'
     },
     {
         name: 'Dave',
-        phone: '4445554444'
+        phone: '4445554444',
+        screener: 'approved'
     },
     {
         name: 'Elea',
-        phone: '5555555555'
+        phone: '5555555555',
+        screener: 'pending'
     },
     {
         name: 'Frank',
-        phone: '6665556666'
+        phone: '6665556666',
+        screener: 'rejected'
     },
     {
         name: 'Gertrude',
-        phone: '7775557777'
+        phone: '7775557777',
+        screener: 'approved'
     },
     {
         name: 'Harry',
-        phone: '8885558888'
+        phone: '8885558888',
+        screener: 'pending'
     },
     {
         name: 'Ingrid',
-        phone: '9995559999'
+        phone: '9995559999',
+        screener: 'rejected'
     },
     {
         name: 'John',
-        phone: '0005550000'
+        phone: '0005550000',
+        screener: 'approved'
     }
 ];
 
@@ -58,15 +66,17 @@ const DUMMY_APPLICANTS: Applicant[] = [
     const db = await getDB();
     await db.exec(`
         create table applicant (
+            id integer primary key autoincrement,
             name text,
             phone text,
             screener text
         ); 
-    `)
-    // 
+    `);
+    
     for (const applicant of DUMMY_APPLICANTS) {
-        await db.run('insert into applicant (name, phone) values (?, ?)', 
+        await db.run('insert into applicant (name, phone, screener) values (?, ?, ?)', 
             applicant.name,
-            applicant.phone);
+            applicant.phone,
+            applicant.screener);
     }
-})()
+})();

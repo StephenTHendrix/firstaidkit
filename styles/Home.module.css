@@ -23,6 +23,12 @@
   text-align: center;
 }
 
+.filters {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
 .table-container {
   height: 400px;
 }
@@ -30,7 +36,7 @@
 .applicant-list {
   border: 1px solid black;
   padding-left: 0;
-  width: 400px;
+  width: 600px;
 }
 
 .applicant, .table-heading {
@@ -58,7 +64,7 @@
 }
 
 .applicant div, .table-heading div {
-  flex: 1 1 50%;
+  flex: 1 1;
   padding: 10px;
   border-right: 1px solid black;
 }

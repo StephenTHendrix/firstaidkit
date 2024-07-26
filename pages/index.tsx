@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import styles from "../styles/Home.module.css";
-import type { Applicant } from "./api/lib/applicant";
+import type { Applicant, ApplicantDisplay } from "./api/lib/applicant";
 import debounce from "debounce";
 
 const debouncedGetSearchResults = debounce(
@@ -32,6 +32,7 @@ const debouncedGetSearchResults = debounce(
 const Home: NextPage = () => {
   const [applicants, setApplicants] = useState<Applicant[]>([]);
   const [search, setSearch] = useState<string>("");
+  const [filter, setFilter] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -44,7 +45,7 @@ const Home: NextPage = () => {
     debouncedGetSearchResults(string, setApplicants);
   };
 
-  const handleSort = (column: keyof Applicant, order: "asc" | "desc") => {
+  const handleSort = (column: keyof ApplicantDisplay, order: "asc" | "desc") => {
     const sortedApplicants = [...applicants].sort((a, b) => {
       if (order === "asc") {
         return a[column].localeCompare(b[column]);
@@ -55,7 +56,16 @@ const Home: NextPage = () => {
     setApplicants(sortedApplicants);
   };
 
-  const columns: (keyof Applicant)[] = ["name", "phone"];
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter(event.target.value);
+  };
+
+  const filteredApplicants = filter
+    ? applicants.filter((applicant) => applicant.screener === filter)
+    : applicants;
+
+  const columns = Object.keys(applicants[0] || {}).filter(key => key !== 'id') as (keyof ApplicantDisplay)[];
+  const filterOptions = ["all", ...Array.from(new Set(applicants.map((applicant) => applicant.screener)))];
 
   return (
     <div className={styles.container}>
@@ -71,21 +81,41 @@ const Home: NextPage = () => {
           value={search}
           onChange={(event) => handleChange(event.target.value)}
         />
+        <div className={styles.filters}>
+          Filter by Screener:
+          {filterOptions.map((option) => (
+            <label key={option}>
+              <input
+                type="radio"
+                name="filter"
+                value={option === "all" ? "" : option}
+                checked={filter === (option === "all" ? "" : option)}
+                onChange={handleFilterChange}
+              />
+              {option.charAt(0).toUpperCase() + option.slice(1)}
+            </label>
+          ))}
+        </div>
         <div className={styles["table-container"]}>
           <ul className={styles["applicant-list"]}>
-          <li className={styles["table-heading"]}>
+            <li className={styles["table-heading"]}>
               {columns.map((column) => (
                 <div key={column}>
-                  <span className={styles["column-name"]}>{column.charAt(0).toUpperCase() + column.slice(1)}</span>
+                  <span className={styles["column-name"]}>
+                    {column.charAt(0).toUpperCase() + column.slice(1)}
+                  </span>
                   <button onClick={() => handleSort(column, "asc")}>Asc</button>
                   <button onClick={() => handleSort(column, "desc")}>Desc</button>
                 </div>
               ))}
             </li>
-            {applicants?.map((applicant) => (
+            {filteredApplicants?.map((applicant) => (
               <li className={styles.applicant} key={applicant.name}>
-                <div className={styles.name}>{applicant.name}</div>
-                <div className={styles.phone}>{applicant.phone}</div>
+                {columns.map((column) => (
+                  <div key={column} className={styles[column]}>
+                    {applicant[column]}
+                  </div>
+                ))}
               </li>
             ))}
           </ul>
